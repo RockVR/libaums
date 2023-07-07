@@ -1,5 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 apply plugin: 'org.jetbrains.dokka'
 apply plugin: 'com.dicedmelon.gradle.jacoco-android'
 
@@ -78,10 +79,9 @@ dependencies {
     testImplementation 'org.xenei:junit-contracts:0.1.7'
     testImplementation 'org.mockito:mockito-core:2.28.2'
 
-    api 'androidx.annotation:annotation:1.6.0'
-    javadocDeps 'androidx.annotation:annotation:1.6.0'
-    api "androidx.core:core-ktx:1.9.0"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'androidx.annotation:annotation:1.6.0'
+    implementation "androidx.core:core-ktx:1.10.1"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.7.10"
 }
 
 repositories {
