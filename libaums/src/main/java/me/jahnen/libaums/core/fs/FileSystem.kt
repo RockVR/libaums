@@ -17,6 +17,9 @@
 
 package me.jahnen.libaums.core.fs
 
+import java.io.IOException
+import kotlin.jvm.Throws
+
 /**
  * This class represents a file system.
  *

@@ -19,6 +19,7 @@ package me.jahnen.libaums.core.fs
 
 import me.jahnen.libaums.core.driver.BlockDeviceDriver
 import me.jahnen.libaums.core.fs.fat32.Fat32FileSystemCreator
+import me.jahnen.libaums.core.fs.ntfs.NTFSFileSystemCreator
 import me.jahnen.libaums.core.partition.PartitionTableEntry
 import java.io.IOException
 import java.util.*
@@ -58,6 +59,7 @@ object FileSystemFactory {
 
     init {
         registerFileSystem(Fat32FileSystemCreator(), DEFAULT_PRIORITY + 1)
+        registerFileSystem(NTFSFileSystemCreator(), DEFAULT_PRIORITY + 2)
     }
 
     @Synchronized

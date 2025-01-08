@@ -8,5 +8,4 @@ add_library( usb-lib
         SHARED
         src/c/usb.c )
 
-
 target_link_libraries(usb-lib log)

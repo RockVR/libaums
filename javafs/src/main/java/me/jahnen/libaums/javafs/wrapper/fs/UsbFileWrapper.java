@@ -54,8 +54,12 @@ public class UsbFileWrapper extends AbstractUsbFile {
     }
 
     @Override
-    public void setName(String newName) throws IOException {
-        entry.setName(newName);
+    public void setName(String newName) {
+        try {
+            entry.setName(newName);
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -152,12 +156,17 @@ public class UsbFileWrapper extends AbstractUsbFile {
     }
 
     @Override
-    public void setLength(long newLength) throws IOException {
+    public void setLength(long newLength) {
         if(dir != null) {
             throw new UnsupportedOperationException("This is a directory!");
         }
 
-        file.setLength(newLength);
+        try {
+            file.setLength(newLength);
+        } catch (IOException e) {
+
+        }
+
     }
 
     @Override
