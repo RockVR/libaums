@@ -18,13 +18,16 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package me.jahnen.libaums.core.fs.ntfs;
+package me.jahnen.libaums.core.fs;
+
+import java.io.IOException;
 
 /**
- * This interface is the base interface for objects that are part of a FileSystem.
+ * <tt>FSDirectory</tt> interface provide methods related to directory operations in a file system.
  *
  * @author epr
  */
-public interface FSObject {
+public interface FSDirectory extends FSObject {
+    public FSEntry getEntry(String name) throws IOException;
 
 }

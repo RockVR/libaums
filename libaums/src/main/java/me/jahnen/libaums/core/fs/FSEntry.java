@@ -18,17 +18,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package me.jahnen.libaums.core.fs.ntfs;
+package me.jahnen.libaums.core.fs;
 
-/**
- * A FSFile is a representation of a single block of bytes on a file system. It
- * is comparable to an inode in Unix.
- *
- * An FSFile does not have any knowledge of who is using this file. It is also
- * possible that the system uses a single FSFile instance to create two
- * inputstream's for two different principals.
- *
- * @author epr
- */
-public interface FSFile extends FSObject {
+import java.io.IOException;
+
+public interface FSEntry extends FSObject {
+    public FSDirectory getDirectory() throws IOException;
 }
