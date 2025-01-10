@@ -25,6 +25,7 @@ import java.nio.ByteBuffer;
 import java.util.Iterator;
 
 import me.jahnen.libaums.core.fs.AbstractUsbFile;
+import me.jahnen.libaums.core.fs.FSFile;
 import me.jahnen.libaums.core.fs.UsbFile;
 import me.jahnen.libaums.core.fs.ntfs.attribute.NTFSAttribute;
 import me.jahnen.libaums.core.fs.ntfs.index.IndexEntry;

@@ -22,6 +22,7 @@ package me.jahnen.libaums.core.fs.ntfs;
 
 import java.util.Iterator;
 
+import me.jahnen.libaums.core.fs.FSEntry;
 import me.jahnen.libaums.core.fs.ntfs.index.IndexEntry;
 import me.jahnen.libaums.core.fs.ntfs.index.NTFSIndex;
 

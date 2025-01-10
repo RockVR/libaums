@@ -22,6 +22,10 @@ package me.jahnen.libaums.core.fs.ntfs;
 
 import java.io.IOException;
 
+import me.jahnen.libaums.core.fs.FSDirectory;
+import me.jahnen.libaums.core.fs.FSEntry;
+import me.jahnen.libaums.core.fs.FSFile;
+import me.jahnen.libaums.core.fs.FSObject;
 import me.jahnen.libaums.core.fs.ntfs.index.IndexEntry;
 
 /**

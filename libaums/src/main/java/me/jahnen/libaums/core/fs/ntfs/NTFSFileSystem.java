@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 
 import me.jahnen.libaums.core.driver.BlockDeviceDriver;
+import me.jahnen.libaums.core.fs.FSEntry;
 import me.jahnen.libaums.core.fs.FileSystem;
 import me.jahnen.libaums.core.fs.UsbFile;
 import me.jahnen.libaums.core.fs.ntfs.attribute.NTFSAttribute;
