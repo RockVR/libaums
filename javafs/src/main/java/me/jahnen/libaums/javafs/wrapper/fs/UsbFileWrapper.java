@@ -22,15 +22,17 @@ import java.util.List;
  */
 
 public class UsbFileWrapper extends AbstractUsbFile {
-
     private static final String TAG = UsbFileWrapper.class.getSimpleName();
 
     private FSEntry entry;
     private FSDirectory dir;
     private FSFile file;
 
-    public UsbFileWrapper(FSEntry entry) throws IOException {
+    private UsbFile _parent;
+
+    public UsbFileWrapper(FSEntry entry, UsbFile parent) throws IOException {
         this.entry = entry;
+        this._parent = parent;
 
         if(entry.isDirectory()) {
             dir = entry.getDirectory();
@@ -100,8 +102,7 @@ public class UsbFileWrapper extends AbstractUsbFile {
 
     @Override
     public UsbFile getParent() {
-        // TODO implement me
-        throw new UnsupportedOperationException("not implemented");
+        return _parent;
     }
 
     @Override
@@ -137,7 +138,7 @@ public class UsbFileWrapper extends AbstractUsbFile {
 
         while(iterator.hasNext()) {
             FSEntry entry = iterator.next();
-            list.add(new UsbFileWrapper(entry));
+            list.add(new UsbFileWrapper(entry, this));
         }
 
         UsbFile[] array = new UsbFile[list.size()];
@@ -206,7 +207,7 @@ public class UsbFileWrapper extends AbstractUsbFile {
         if(dir == null) {
             throw new UnsupportedOperationException("This is a file!");
         }
-        return new UsbFileWrapper(dir.addDirectory(name));
+        return new UsbFileWrapper(dir.addDirectory(name), this);
     }
 
     @Override
@@ -215,7 +216,7 @@ public class UsbFileWrapper extends AbstractUsbFile {
             throw new UnsupportedOperationException("This is a file!");
         }
 
-        return new UsbFileWrapper(dir.addFile(name));
+        return new UsbFileWrapper(dir.addFile(name), this);
     }
 
     @Override
