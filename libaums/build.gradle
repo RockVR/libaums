@@ -1,6 +1,5 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'org.jetbrains.dokka'
 apply plugin: 'com.dicedmelon.gradle.jacoco-android'
 
@@ -82,7 +81,6 @@ dependencies {
     implementation 'androidx.annotation:annotation:1.6.0'
     implementation "androidx.core:core-ktx:1.10.1"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation files("libs\\log4j-1.2.8.jar")
 }
 
 repositories {
