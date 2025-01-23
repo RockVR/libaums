@@ -38,7 +38,6 @@ public class NodeDirectory extends AbstractFSObject implements FSDirectory, FSDi
     private final NodeEntry nodeEntry;
     private final Map<String, NodeEntry> nameToNode;
     private final Map<String, NodeEntry> idToNode;
-    private final UpcaseTable upcase;
 
     public NodeDirectory(ExFatFileSystem fs, NodeEntry nodeEntry)
         throws IOException {
@@ -52,13 +51,11 @@ public class NodeDirectory extends AbstractFSObject implements FSDirectory, FSDi
         super(fs);
 
         this.nodeEntry = nodeEntry;
-        this.upcase = fs.getUpcase();
         this.nameToNode = new LinkedHashMap<String, NodeEntry>();
         this.idToNode = new LinkedHashMap<String, NodeEntry>();
 
         DirectoryParser.
             create(nodeEntry.getNode(), showDeleted).
-            setUpcase(this.upcase).
             parse(new VisitorImpl());
 
     }
@@ -76,7 +73,7 @@ public class NodeDirectory extends AbstractFSObject implements FSDirectory, FSDi
 
     @Override
     public FSEntry getEntry(String name) throws IOException {
-        return this.nameToNode.get(upcase.toUpperCase(name));
+        return this.nameToNode.get(name.toUpperCase());
     }
 
     @Override
@@ -151,8 +148,7 @@ public class NodeDirectory extends AbstractFSObject implements FSDirectory, FSDi
 
         @Override
         public void foundNode(Node node, int index) throws IOException {
-            final String upcaseName = upcase.toUpperCase(node.getName());
-
+            final String upcaseName = node.getName().toUpperCase();
             NodeEntry nodeEntry = new NodeEntry((ExFatFileSystem) getFileSystem(), node, NodeDirectory.this, index);
             nameToNode.put(upcaseName, nodeEntry);
             idToNode.put(nodeEntry.getId(), nodeEntry);

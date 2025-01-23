@@ -35,7 +35,6 @@ public final class ExFatFileSystem extends AbstractFileSystem<NodeEntry> {
 
     private final ExFatSuperBlock sb;
     private final Node rootNode;
-    private final UpcaseTable upcase;
     private final String label;
     private final ClusterBitMap bitmap;
 
@@ -47,17 +46,13 @@ public final class ExFatFileSystem extends AbstractFileSystem<NodeEntry> {
             rootNode = Node.createRoot(sb);
             final RootDirVisitor rootDirVis = new RootDirVisitor(sb);
 
-            DirectoryParser.create(rootNode).parse(rootDirVis);
-
-            if (rootDirVis.bitmap == null) {
-                throw new FileSystemException("cluster bitmap not found");
+            try {
+                DirectoryParser.create(rootNode).parse(rootDirVis);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
-            if (rootDirVis.upcase == null) {
-                throw new FileSystemException("upcase table not found");
-            }
 
-            this.upcase = rootDirVis.upcase;
             this.bitmap = rootDirVis.bitmap;
             this.label = rootDirVis.label;
 
@@ -106,9 +101,9 @@ public final class ExFatFileSystem extends AbstractFileSystem<NodeEntry> {
         return entry.getDirectory();
     }
 
-    public UpcaseTable getUpcase() {
-        return upcase;
-    }
+//    public UpcaseTable getUpcase() {
+//        return upcase;
+//    }
 
     /**
      * Gets the super block.
@@ -159,15 +154,15 @@ public final class ExFatFileSystem extends AbstractFileSystem<NodeEntry> {
         public void foundUpcaseTable(DirectoryParser parser, long startCluster, long size,
                                      long checksum) throws IOException {
 
-            if (this.upcase != null) {
-                throw new IOException("already had an upcase table");
-            }
-
-            this.upcase = UpcaseTable.read(
-                this.sb, startCluster, size, checksum);
-
-            /* the parser may use this table for file names to come */
-            parser.setUpcase(this.upcase);
+//            if (this.upcase != null) {
+//                throw new IOException("already had an upcase table");
+//            }
+//
+//            this.upcase = UpcaseTable.read(
+//                this.sb, startCluster, size, checksum);
+//
+//            /* the parser may use this table for file names to come */
+//            parser.setUpcase(this.upcase);
         }
 
         @Override
