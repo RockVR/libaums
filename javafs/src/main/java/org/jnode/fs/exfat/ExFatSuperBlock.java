@@ -141,7 +141,9 @@ public final class ExFatSuperBlock extends AbstractFSObject {
     public long clusterToOffset(long cluster) throws IOException {
         return blockToOffset(clusterToBlock(cluster));
     }
-
+    public void readCluster2(ByteBuffer dest, long cluster, long offset) throws IOException {
+        da.read(dest, clusterToOffset(cluster) + offset);
+    }
     public void readCluster(ByteBuffer dest, long cluster) throws IOException {
         assert (dest.remaining() <= this.getBytesPerCluster())
             : "read over cluster bundary";

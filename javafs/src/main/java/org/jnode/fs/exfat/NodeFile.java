@@ -20,9 +20,13 @@
  
 package org.jnode.fs.exfat;
 
+import android.util.Log;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+
+import org.apache.log4j.Logger;
 import org.jnode.fs.FSFile;
 import org.jnode.fs.spi.AbstractFSObject;
 
@@ -32,6 +36,8 @@ import org.jnode.fs.spi.AbstractFSObject;
 public class NodeFile extends AbstractFSObject implements FSFile {
 
     private final Node node;
+    private long lastClusterToSkip = -1;
+    private long lastCluster = -1;
 
     public NodeFile(ExFatFileSystem fs, Node node) {
         super(fs);
@@ -53,58 +59,99 @@ public class NodeFile extends AbstractFSObject implements FSFile {
 
     @Override
     public void read(long offset, ByteBuffer dest) throws IOException {
-        final int len = dest.remaining();
+        final int remaining = dest.remaining();
+        if (remaining == 0) return;
 
-        if (len == 0) return;
-
-        if (offset + len > getLength()) {
+        if (offset + remaining > getLength()) {
             throw new EOFException();
         }
 
-        final int bpc = node.getSuperBlock().getBytesPerCluster();
-        long cluster = node.getStartCluster();
-        int remain = dest.remaining();
+        final int bytesPerCluster = node.getSuperBlock().getBytesPerCluster();
+        long startCluster = node.getStartCluster();
+        int remaining2 = dest.remaining();
 
         // Skip to the cluster that corresponds to the requested offset
-        long clustersToSkip = offset / bpc;
-        for (int i = 0; i < clustersToSkip; i++) {
-            cluster = this.node.nextCluster(cluster);
+        long clustersToSkip = offset / bytesPerCluster;
+        if(this.lastClusterToSkip < 0 || this.lastClusterToSkip > clustersToSkip) {
+            for (int i = 0; i < clustersToSkip; i++) {
+                startCluster = this.node.nextCluster(startCluster);
 
-            if (Cluster.invalid(cluster)) {
-                throw new IOException("invalid cluster");
+                if (Cluster.invalid(startCluster)) {
+                    throw new IOException("invalid cluster");
+                }
+            }
+        } else {
+            startCluster = this.lastCluster;
+            while (this.lastClusterToSkip < clustersToSkip) {
+                startCluster = this.node.nextCluster(startCluster);
+                if (Cluster.invalid(startCluster)) {
+                    throw new IOException("invalid cluster");
+                }
+                this.lastClusterToSkip++;
             }
         }
 
-        // Read in any leading partial cluster
-        if (offset % bpc != 0) {
-            ByteBuffer tmpBuffer = ByteBuffer.allocate(bpc);
-            node.getSuperBlock().readCluster(tmpBuffer, cluster);
+        try {
+            this.lastClusterToSkip = clustersToSkip;
+            this.lastCluster = startCluster;
+            if(dest.remaining() >= bytesPerCluster) {
+                ByteBuffer allocate = ByteBuffer.allocate(bytesPerCluster);
+                if(offset % bytesPerCluster != 0) {
+                    allocate.rewind();
+                    this.node.getSuperBlock().readCluster(allocate, startCluster);
+                    int tmpOffset = (int) (offset % bytesPerCluster);
+                    int tmpLength = Math.min(remaining2, bytesPerCluster - tmpOffset);
+                    int position = dest.position();
+                    System.arraycopy(allocate.array(), tmpOffset, dest.array(), position, tmpLength);
+                    dest.position(position + tmpLength);
+                    remaining2 -= tmpLength;
+                    startCluster = node.nextCluster(startCluster);
+                    if (remaining2 != 0 && Cluster.invalid(startCluster)) {
+                        throw new IOException("invalid cluster");
+                    }
+                }
+                // Read in the remaining data
+                while (remaining2 > 0) {
+                    int toRead = Math.min(bytesPerCluster, remaining2);
+                    int position = dest.position();
+                    allocate.rewind();
+                    node.getSuperBlock().readCluster(allocate, startCluster);
+                    System.arraycopy(allocate.array(), 0, dest.array(), position, toRead);
+                    dest.position(position + toRead);
+                    remaining2 -= toRead;
+                    startCluster = this.node.nextCluster(startCluster);
 
-            int tmpOffset = (int) (offset % bpc);
-            int tmpLength = Math.min(remain, bpc - tmpOffset);
-
-            dest.put(tmpBuffer.array(), tmpOffset, tmpLength);
-            remain -= tmpLength;
-            cluster = this.node.nextCluster(cluster);
-
-            if (remain != 0 && Cluster.invalid(cluster)) {
+                    if (remaining2 != 0 && Cluster.invalid(startCluster)) {
+                        throw new IOException("invalid cluster");
+                    }
+                }
+                return;
+            }
+            if (offset % bytesPerCluster != 0) {
+                int position = dest.position();
+                int tmpOffset = (int) (offset % bytesPerCluster);
+                this.node.getSuperBlock().readCluster2(dest, startCluster, tmpOffset);
+                startCluster = this.node.nextCluster(startCluster);
+                if(bytesPerCluster - tmpOffset < remaining2) {
+                    dest.position((position + bytesPerCluster) - tmpOffset);
+                }
+                if(dest.remaining() != 0 && Cluster.invalid(startCluster)) {
+                    throw new IOException("invalid cluster");
+                }
+            }
+            if(dest.remaining() < 0) {
+                return;
+            }
+            this.node.getSuperBlock().readCluster(dest, startCluster);
+            long nextCluster = this.node.nextCluster(startCluster);
+            if(dest.remaining() != 0 && Cluster.invalid(nextCluster)) {
                 throw new IOException("invalid cluster");
             }
+        } catch (Exception e) {
+            Log.e("NodeFile","NodeFile read error=" + e.toString());
         }
 
-        // Read in the remaining data
-        while (remain > 0) {
-            int toRead = Math.min(bpc, remain);
-            dest.limit(dest.position() + toRead);
-            node.getSuperBlock().readCluster(dest, cluster);
 
-            remain -= toRead;
-            cluster = this.node.nextCluster(cluster);
-
-            if (remain != 0 && Cluster.invalid(cluster)) {
-                throw new IOException("invalid cluster");
-            }
-        }
     }
 
     @Override
