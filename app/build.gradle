@@ -2,13 +2,13 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 33
+    compileSdkVersion 35
     buildToolsVersion '30.0.3'
 
     defaultConfig {
         applicationId "com.github.mjdev.usbfileman"
-        minSdkVersion 16
-        targetSdkVersion 33
+        minSdkVersion 29
+        targetSdkVersion 32
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
@@ -24,6 +24,13 @@ android {
     }
     namespace 'me.jahnen.libaums.core.usbfileman'
 
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
 }
 
 dependencies {
