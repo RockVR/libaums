@@ -528,7 +528,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
             /** Called when a drawer has settled in a completely closed state.  */
             override fun onDrawerClosed(view: View) {
                 super.onDrawerClosed(view)
-                supportActionBar!!.setTitle(massStorageDevices[currentDevice].partitions[0].volumeLabel)
+                supportActionBar!!.setTitle(massStorageDevices[currentDevice].partitions?.get(0)?.volumeLabel ?: "no title")
             }
 
             /** Called when a drawer has settled in a completely open state.  */
@@ -596,7 +596,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
         } else {
             // first request permission from user to communicate with the underlying UsbDevice
             val permissionIntent = PendingIntent.getBroadcast(this, 0, Intent(
-                    ACTION_USB_PERMISSION), 0)
+                    ACTION_USB_PERMISSION), PendingIntent.FLAG_IMMUTABLE)
             usbManager.requestPermission(massStorageDevices[currentDevice].usbDevice, permissionIntent)
         }
     }
@@ -609,7 +609,8 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
             massStorageDevices[currentDevice].init()
 
             // we always use the first partition of the device
-            currentFs = massStorageDevices[currentDevice].partitions[0].fileSystem.also {
+            val partition = massStorageDevices[currentDevice].partitions?.get(0) ?: return
+            currentFs = partition.fileSystem.also {
                 Log.d(TAG, "Capacity: " + it.capacity)
                 Log.d(TAG, "Occupied Space: " + it.occupiedSpace)
                 Log.d(TAG, "Free Space: " + it.freeSpace)

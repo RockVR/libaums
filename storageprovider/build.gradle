@@ -16,11 +16,11 @@ configurations {
 }
 
 android {
-    compileSdkVersion 32
+    compileSdkVersion 35
     buildToolsVersion '30.0.3'
 
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 21
         targetSdkVersion 32
     }
     buildTypes {

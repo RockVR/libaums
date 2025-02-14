@@ -76,7 +76,7 @@ private constructor(private val usbManager: UsbManager,
                     val usbDevice: UsbDevice,
                     private val usbInterface: UsbInterface, private val inEndpoint: UsbEndpoint, private val outEndpoint: UsbEndpoint) {
 
-    lateinit var partitions: List<Partition>
+    var partitions: List<Partition>? = null
 
     // TODO this is never used, should we only allow one init() call?
     private var inited = false

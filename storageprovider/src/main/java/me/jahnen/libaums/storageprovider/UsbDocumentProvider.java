@@ -388,7 +388,7 @@ public class UsbDocumentProvider extends DocumentsProvider {
                     addRoot(massStorageDevice);
                 } else {
                     PendingIntent permissionIntent = PendingIntent.getBroadcast(context, 0, new Intent(
-                            ACTION_USB_PERMISSION), 0);
+                            ACTION_USB_PERMISSION), PendingIntent.FLAG_IMMUTABLE);
                     usbManager.requestPermission(device, permissionIntent);
                 }
             }
