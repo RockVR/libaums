@@ -1,23 +1,8 @@
-/*
- * $Id$
- *
- * Copyright (C) 2003-2015 JNode.org
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2.1 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
- * License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this library; If not, write to the Free Software Foundation, Inc., 
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
- 
+//
+// Source code recreated from a .class file by IntelliJ IDEA
+// (powered by FernFlower decompiler)
+//
+
 package org.jnode.fs.exfat;
 
 import java.io.IOException;
@@ -25,207 +10,200 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import org.jnode.fs.spi.AbstractFSObject;
 
-/**
- * @author Matthias Treydte &lt;waldheinz at gmail.com&gt;
- */
 public final class ExFatSuperBlock extends AbstractFSObject {
-
-    /**
-     * The size of the ExFAT super block in bytes.
-     */
+    static final boolean $assertionsDisabled = false;
+    private static final String OEM_NAME = "EXFAT   ";
     private static final int SIZE = 512;
-
-    private static final String OEM_NAME = "EXFAT   "; //NOI18N
-
-    private final DeviceAccess da;
-
-    private long blockStart;
+    private static final int m_iGroupClusterCount = 65536;
+    private static final int m_iGroupClusterMark0 = -65536;
+    private static final int m_iGroupClusterMark1 = 65535;
+    private static final int m_iGroupClusterShiftBit = 16;
+    private byte blockBits;
     private long blockCount;
-    private long fatBlockStart;
-    private long fatBlockCount;
+    private long blockStart;
+    private byte blocksPerClusterBits;
     private long clusterBlockStart;
     private long clusterCount;
+    private final DeviceAccess da;
+    private long fatBlockCount;
+    private long fatBlockStart;
+    private byte fsVersionMajor;
+    private byte fsVersionMinor;
+    private ByteBuffer[] m_clusterTable = null;
+    private byte percentInUse;
     private long rootDirCluster;
     private int volumeSerial;
-    private byte fsVersionMinor;
-    private byte fsVersionMajor;
     private short volumeState;
-    private byte blockBits;
-    private byte blocksPerClusterBits;
-    private byte percentInUse;
 
-    public ExFatSuperBlock(ExFatFileSystem fs) {
-        super(fs);
-
-        this.da = new DeviceAccess(fs.getApi());
+    public ExFatSuperBlock(ExFatFileSystem var1) {
+        super(var1);
+        this.da = new DeviceAccess(var1.getApi());
     }
 
-    public static ExFatSuperBlock read(ExFatFileSystem fs) throws IOException {
-
-        final ByteBuffer b = ByteBuffer.allocate(SIZE);
-        b.order(ByteOrder.LITTLE_ENDIAN);
-        fs.getApi().read(0, b);
-        
-        /* check OEM name */
-
-        final byte[] oemBytes = new byte[OEM_NAME.length()];
-        b.position(0x03);
-        b.get(oemBytes);
-        final String oemString = new String(oemBytes);
-
-        if (!OEM_NAME.equals(oemString)) {
+    public static ExFatSuperBlock read(ExFatFileSystem var0) throws IOException {
+        ByteBuffer var1 = ByteBuffer.allocate(512);
+        var1.order(ByteOrder.LITTLE_ENDIAN);
+        var0.getApi().read(0L, var1);
+        byte[] var2 = new byte[8];
+        var1.position(3);
+        var1.get(var2);
+        if ("EXFAT   ".equals(new String(var2))) {
+            if ((var1.get(110) & 255) == 1) {
+                if ((var1.get(111) & 255) == 128) {
+                    if ((var1.get(510) & 255) == 85 && (var1.get(511) & 255) == 170) {
+                        ExFatSuperBlock var3 = new ExFatSuperBlock(var0);
+                        var3.blockStart = var1.getLong(64);
+                        var3.blockCount = var1.getLong(72);
+                        var3.fatBlockStart = (long)var1.getInt(80);
+                        var3.fatBlockCount = (long)var1.getInt(84);
+                        var3.clusterBlockStart = (long)var1.getInt(88);
+                        var3.clusterCount = (long)var1.getInt(92);
+                        var3.rootDirCluster = (long)var1.getInt(96);
+                        var3.volumeSerial = var1.getInt(100);
+                        var3.fsVersionMinor = var1.get(104);
+                        var3.fsVersionMajor = var1.get(105);
+                        var3.volumeState = var1.getShort(106);
+                        var3.blockBits = var1.get(108);
+                        var3.blocksPerClusterBits = var1.get(109);
+                        var3.percentInUse = var1.get(112);
+                        var3.m_clusterTable = new ByteBuffer[(int)((var3.clusterCount >> 16) + 1L)];
+                        if (var3.fsVersionMajor == 1) {
+                            if (var3.fsVersionMinor == 0) {
+                                return var3;
+                            } else {
+                                throw new IOException("unsupported version minor " + var3.fsVersionMinor);
+                            }
+                        } else {
+                            throw new IOException("unsupported version major " + var3.fsVersionMajor);
+                        }
+                    } else {
+                        throw new IOException("missing boot sector signature");
+                    }
+                } else {
+                    throw new IOException("invalid drive number");
+                }
+            } else {
+                throw new IOException("invalid FAT count");
+            }
+        } else {
             throw new IOException("OEM name mismatch");
         }
+    }
 
-        /* check fat count */
+    long GetCluster(long var1) {
+        int var3 = (int)(var1 >> 16);
+        ByteBuffer[] var8 = this.m_clusterTable;
+        if (var8[var3] == null) {
+            label30: {
+                boolean var10001;
+                long var6;
+                try {
+                    var8[var3] = ByteBuffer.allocate(262144);
+                    this.m_clusterTable[var3].order(ByteOrder.LITTLE_ENDIAN);
+                    this.m_clusterTable[var3].rewind();
+                    var6 = this.blockToOffset(this.getFatBlockStart());
+                } catch (Exception var10) {
+                    var10001 = false;
+                    break label30;
+                }
 
-        if ((b.get(0x6e) & 0xff) != 1) {
-            throw new IOException("invalid FAT count");
+                long var4 = (long)((var3 << 16) * 4);
+
+                try {
+                    this.da.dev.read(var6 + var4, this.m_clusterTable[var3]);
+                    this.m_clusterTable[var3].rewind();
+                } catch (Exception var9) {
+                    var10001 = false;
+                }
+            }
         }
 
-        /* check drive # */
-
-        if ((b.get(0x6f) & 0xff) != 0x80) {
-            throw new IOException("invalid drive number");
-        }
-        
-        /* check boot signature */
-
-        if ((b.get(510) & 0xff) != 0x55 || (b.get(511) & 0xff) != 0xaa)
-            throw new IOException("missing boot sector signature");
-
-        final ExFatSuperBlock result = new ExFatSuperBlock(fs);
-
-        result.blockStart = b.getLong(0x40);
-        result.blockCount = b.getLong(0x48);
-        result.fatBlockStart = b.getInt(0x50);
-        result.fatBlockCount = b.getInt(0x54);
-        result.clusterBlockStart = b.getInt(0x58);
-        result.clusterCount = b.getInt(0x5c);
-        result.rootDirCluster = b.getInt(0x60);
-        result.volumeSerial = b.getInt(0x64);
-        result.fsVersionMinor = b.get(0x68);
-        result.fsVersionMajor = b.get(0x69);
-        result.volumeState = b.getShort(0x6a);
-        result.blockBits = b.get(0x6c);
-        result.blocksPerClusterBits = b.get(0x6d);
-        result.percentInUse = b.get(0x70);
-
-        /* check version */
-
-        if (result.fsVersionMajor != 1) {
-            throw new IOException("unsupported version major " +
-                result.fsVersionMajor);
-        }
-
-        if (result.fsVersionMinor != 0) {
-            throw new IOException("unsupported version minor " +
-                result.fsVersionMinor);
-        }
-
-        return result;
+        var8 = this.m_clusterTable;
+        return var8[var3] != null ? (long)var8[var3].getInt((int)((var1 & 65535L) * 4L)) & 4294967295L : 0L;
     }
 
-    public long clusterToBlock(long cluster) throws IOException {
-        Cluster.checkValid(cluster);
-
-        return this.clusterBlockStart +
-            ((cluster - Cluster.FIRST_DATA_CLUSTER) <<
-                this.blocksPerClusterBits);
+    public long blockToOffset(long var1) {
+        return var1 << this.blockBits;
     }
 
-    public long blockToOffset(long block) {
-        return (block << this.blockBits);
+    public long clusterToBlock(long var1) throws IOException {
+        Cluster.checkValid(var1);
+        return this.clusterBlockStart + (var1 - 2L << this.blocksPerClusterBits);
     }
 
-    public long clusterToOffset(long cluster) throws IOException {
-        return blockToOffset(clusterToBlock(cluster));
-    }
-    public void readCluster2(ByteBuffer dest, long cluster, long offset) throws IOException {
-        da.read(dest, clusterToOffset(cluster) + offset);
-    }
-    public void readCluster(ByteBuffer dest, long cluster) throws IOException {
-        assert (dest.remaining() <= this.getBytesPerCluster())
-            : "read over cluster bundary";
-
-        da.read(dest, clusterToOffset(cluster));
-    }
-
-    public DeviceAccess getDeviceAccess() {
-        return da;
-    }
-
-    public long getBlockStart() {
-        return blockStart;
+    public long clusterToOffset(long var1) throws IOException {
+        return this.blockToOffset(this.clusterToBlock(var1));
     }
 
     public long getBlockCount() {
-        return blockCount;
-    }
-
-    public long getFatBlockStart() {
-        return fatBlockStart;
-    }
-
-    public long getFatBlockCount() {
-        return fatBlockCount;
-    }
-
-    public long getClusterBlockStart() {
-        return clusterBlockStart;
-    }
-
-    /**
-     * Returns the total number of data clusters available on the file system.
-     * To iterate the clusters the range {@code 0..count} must be shifted by
-     * {@link Cluster#FIRST_DATA_CLUSTER}.
-     *
-     * @return the number of usable clusters on the file system
-     */
-    public long getClusterCount() {
-        return clusterCount;
-    }
-
-    public long getRootDirCluster() {
-        return rootDirCluster;
-    }
-
-    public int getVolumeSerial() {
-        return volumeSerial;
-    }
-
-    public byte getFsVersionMajor() {
-        return fsVersionMajor;
-    }
-
-    public byte getFsVersionMinor() {
-        return fsVersionMinor;
-    }
-
-    public short getVolumeState() {
-        return volumeState;
+        return this.blockCount;
     }
 
     public int getBlockSize() {
-        return (1 << blockBits);
+        return 1 << this.blockBits;
+    }
+
+    public long getBlockStart() {
+        return this.blockStart;
     }
 
     public int getBlocksPerCluster() {
-        return (1 << blocksPerClusterBits);
+        return 1 << this.blocksPerClusterBits;
     }
 
     public int getBytesPerCluster() {
-        return (getBlockSize() << this.blocksPerClusterBits);
+        return this.getBlockSize() << this.blocksPerClusterBits;
     }
 
-    /**
-     * Returns the percentage of allocated clusters, rounded down to
-     * integer value. {@code 0xff} means this value is not available.
-     *
-     * @return the percent of used clusters
-     */
+    public long getClusterBlockStart() {
+        return this.clusterBlockStart;
+    }
+
+    public long getClusterCount() {
+        return this.clusterCount;
+    }
+
+    public DeviceAccess getDeviceAccess() {
+        return this.da;
+    }
+
+    public long getFatBlockCount() {
+        return this.fatBlockCount;
+    }
+
+    public long getFatBlockStart() {
+        return this.fatBlockStart;
+    }
+
+    public byte getFsVersionMajor() {
+        return this.fsVersionMajor;
+    }
+
+    public byte getFsVersionMinor() {
+        return this.fsVersionMinor;
+    }
+
     public byte getPercentInUse() {
-        return percentInUse;
+        return this.percentInUse;
     }
 
+    public long getRootDirCluster() {
+        return this.rootDirCluster;
+    }
+
+    public int getVolumeSerial() {
+        return this.volumeSerial;
+    }
+
+    public short getVolumeState() {
+        return this.volumeState;
+    }
+
+    public void readCluster(ByteBuffer var1, long var2) throws IOException {
+        this.da.read(var1, this.clusterToOffset(var2));
+    }
+
+    public void readCluster2(ByteBuffer var1, long var2, long var4) throws IOException {
+        this.da.read(var1, this.clusterToOffset(var2) + var4);
+    }
 }

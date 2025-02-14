@@ -36,7 +36,7 @@ final class DeviceAccess {
      */
     public static final int BYTES_PER_CHAR = 2;
 
-    private final BlockDeviceAPI dev;
+    final BlockDeviceAPI dev;
     private final ByteBuffer buffer;
 
     public DeviceAccess(BlockDeviceAPI dev) {

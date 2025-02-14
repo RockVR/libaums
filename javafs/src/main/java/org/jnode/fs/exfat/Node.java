@@ -153,11 +153,11 @@ public final class Node {
         if (this.isContiguous) {
             return cluster + 1;
         } else {
-            final long fatOffset =
-                sb.blockToOffset(this.sb.getFatBlockStart()) +
-                    cluster * Cluster.SIZE;
+//            final long fatOffset =
+//                sb.blockToOffset(this.sb.getFatBlockStart()) +
+//                    cluster * Cluster.SIZE;
 
-            return this.da.getUint32(fatOffset);
+            return this.sb.GetCluster(cluster);
         }
     }
 
